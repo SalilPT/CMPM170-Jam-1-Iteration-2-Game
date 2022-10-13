@@ -70,8 +70,15 @@ class BowlingBall {
    }
    
    calculateThrowSpeed() {
-      // TODO: Make throwing speed near the center of the screen higher 
-      return this.BASE_THROW_SPEED;
+      let xDistFromCenter = abs(this.x - G.WIDTH/2);
+      let maxDistFromCenter = (this.RIGHT_SCREEN_BOUND - this.LEFT_SCREEN_BOUND) / 2;
+      let propDistFromSide = 1 - (xDistFromCenter/maxDistFromCenter); // Proportion
+
+      let maxThrowMultiplier = 2;
+      let minThrowMultiplier = 1;
+
+      let throwSpeedMultiplier = minThrowMultiplier + propDistFromSide * (maxThrowMultiplier - minThrowMultiplier);
+      return this.BASE_THROW_SPEED * throwSpeedMultiplier;
    }
 
    resetProperties() {
