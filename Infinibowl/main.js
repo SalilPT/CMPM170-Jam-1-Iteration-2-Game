@@ -29,7 +29,7 @@ const G = {
   HEIGHT: 90,
   // Events for classes to use
   PIN_KNOCKED_DOWN_EVENT: new Event("pinKnockedDown"),
-  TIME_UP_EVENT: new Event("timeUp")
+  TIMER_FINISHED_EVENT: new Event("timerFinished")
 }
 
 options = {
@@ -192,30 +192,62 @@ class PinRow {
 class CountdownTimer {
   constructor() {
     /*
+    Constants
+    */
+    this.UI_TEXT_X_COORD = 2;
+    this.UI_TEXT_Y_COORD = G.HEIGHT - 3;
+
+    /*
     Mutable Properties
     */
-    let countdownInProgress;
-    let countdownFinished;
+    this.countdownInProgress;
+    this.ticksSinceTimerStart;
+    this.totalCountdownTicks; // For a countdown of 2 seconds, this would be 120.
+
+    this.displayUIText;
   }
 
   resetProperties() {
     this.countdownInProgress = false;
-    this.countdownFinished = false;
+    this.ticksSinceTimerStart = 0;
+    this.totalCountdownTicks = 0;
+    this.displayUIText = false;
+  }
+
+  // Takes the number of seconds for the countdown as an argument.
+  // Works with non-integer values.
+  // The second parameter controls whether or not to show the countdown UI text.
+  startCountdown(seconds, display = false) {
+    // Ticks occur every 1/60th of a second
+    this.totalCountdownTicks = ceil(seconds * 60);
+
+    this.ticksSinceTimerStart = 0;
+    this.countdownInProgress = true;
+    this.displayUIText = display;
   }
 
   update() {
-    // Draw text indicating time left
-    if (this.countdownInProgress && !this.countdownFinished) {
+    if (this.countdownInProgress) {
+      this.ticksSinceTimerStart++;
+    }
+    if (this.countdownInProgress && (this.ticksSinceTimerStart >= this.totalCountdownTicks)) {
+      this.countdownInProgress = false;
+      dispatchEvent(G.TIMER_FINISHED_EVENT);
+    }
 
+    // Draw text indicating time left
+    if (this.displayUIText) {
+      let secondsRemaining = floor((this.totalCountdownTicks - this.ticksSinceTimerStart) / 60);
+      text("T " + secondsRemaining, this.UI_TEXT_X_COORD, this.UI_TEXT_Y_COORD);
     }
   }
 }
 
 class LevelManager {
   constructor() {
-    let currLevel;
-    let numPinsKnockedDown;
-    let numPinsNeededForLevel;
+    this.currLevel;
+    this.numPinsKnockedDown;
+    this.numPinsNeededForLevel;
     addEventListener("pinKnockedDown", () => {console.log("Pin knocked down")});
   }
 
