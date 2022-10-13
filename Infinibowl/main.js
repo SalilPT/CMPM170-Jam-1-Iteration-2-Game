@@ -6,20 +6,20 @@ Throw`;
 
 characters = [
   `
- llll
-ll l l
-lll ll
-llllll
-llllll
- llll
+ rrrr
+rr r r
+rrr rr
+prrrrr
+pprrrr
+ pppp
 `
 ,
 `
- ll
- ll
-llll
-llll
- ll
+ cc
+ cc
+cccc
+bccc
+ bb
 `
 ];
 
@@ -33,11 +33,11 @@ const G = {
 }
 
 options = {
-  //theme: "pixel",
+  theme: "pixel",
   viewSize: {x: G.WIDTH, y: G.HEIGHT},
   isPlayingBgm: true,
   isReplayEnabled: false,
-  //seed: 100
+  seed: 78
 };
 
 class BowlingBall {
