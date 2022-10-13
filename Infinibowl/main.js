@@ -1,8 +1,8 @@
 title = "Infinibowl";
 
 description = `
-[click] 
-to bowl`;
+[Tap]
+Throw`;
 
 characters = [
   `
@@ -11,7 +11,7 @@ ll l l
 lll ll
 llllll
 llllll
- llll 
+ llll
 `
 ,
 `
@@ -19,7 +19,7 @@ llllll
  ll
 llll
 llll
- ll 
+ ll
 `
 ];
 
@@ -36,7 +36,7 @@ options = {
   //theme: "pixel",
   viewSize: {x: G.WIDTH, y: G.HEIGHT},
   isPlayingBgm: true,
-  isReplayEnabled: true,
+  isReplayEnabled: false,
   //seed: 100
 };
 
@@ -88,6 +88,12 @@ class BowlingBall {
     this.xVelBeforeRolling = 0;
     this.xVel = this.BASE_X_VEL;
     this.yVel = this.BASE_Y_VEL;
+    this.isRolling = false;
+  }
+
+  setXVelFromLevel(level) {
+    // TODO?: Change this
+    this.xVel = this.BASE_X_VEL * sqrt(level);
   }
 
   update() {
@@ -180,7 +186,8 @@ class PinRow {
       if (pinCollision.isColliding.char[ball.charLetter]) {
         score += 1;
         dispatchEvent(G.PIN_KNOCKED_DOWN_EVENT);
-        play("hit", {note: "F3"});
+        play("hit");
+        particle(pin.x, pin.y, 10, 0.75, -PI/2, PI/8);
         pinsToRemove.push(pin);
       }
     }
@@ -194,7 +201,7 @@ class CountdownTimer {
     /*
     Constants
     */
-    this.UI_TEXT_X_COORD = 2;
+    this.UI_TEXT_X_COORD = 3;
     this.UI_TEXT_Y_COORD = G.HEIGHT - 3;
 
     /*
@@ -248,17 +255,117 @@ class LevelManager {
     this.currLevel;
     this.numPinsKnockedDown;
     this.numPinsNeededForLevel;
-    addEventListener("pinKnockedDown", () => {console.log("Pin knocked down")});
+
+    this.inLevelTransition;
+    this.inTransitionPhase1;
+    this.inTransitionPhase2;
+
+    this.phase1Text;
+    this.phase2TextArray;
+
+    this.pinKnockedDownCallback = () => {
+      this.numPinsKnockedDown++;
+    }
+    addEventListener("pinKnockedDown", this.pinKnockedDownCallback);
+
+    this.levelEndCallback = () => {
+      if (this.numPinsKnockedDown < this.numPinsNeededForLevel) {
+        end("GAME OVER");
+      }
+      else {
+        this.playLevelTransitionSequence();
+      }
+      removeEventListener("timerFinished", this.levelEndCallback);
+    }
   }
 
   calculatePinsNeededForLevel() {
+    return 10 + ceil(2 * sqrt(this.currLevel - 1));
+  }
 
+  calculateTimeForLevel() {
+    return 11 + 1.5 * sqrt(this.currLevel - 1);
+  }
+
+  // Return a vector for the position the given single line of text would need to be drawn to be centered
+  getCenteredTextLineCoords(text) {
+    let textX = 3 + (G.WIDTH - text.length * 6)/2;
+    let textY = G.HEIGHT / 2 - 3;
+    return vec(textX, textY);
+  }
+
+  getCenteredTextLineXCoord(text) {
+    return 3 + (G.WIDTH - text.length * 6)/2;
+  }
+
+  playLevelTransitionSequence() {
+    this.inLevelTransition = true;
+    this.inTransitionPhase1 = true;
+    this.currLevel++;
+
+    pinRowBottom.resetProperties();
+    pinRowTop.resetProperties();
+    ball.resetProperties();
+
+    this.numPinsKnockedDown = 0;
+    this.numPinsNeededForLevel = this.calculatePinsNeededForLevel();
+    this.phase1Text = "Level " + this.currLevel;
+
+    let transitionPhase1Callback = () => {
+      this.phase2TextArray = [
+        "Hit " + this.calculatePinsNeededForLevel(),
+        "or more",
+        "pins in",
+        floor(this.calculateTimeForLevel()) + " secs."
+      ];
+
+      this.inTransitionPhase1 = false;
+      this.inTransitionPhase2 = true;
+      timer.startCountdown(3.5);
+
+      removeEventListener("timerFinished", transitionPhase1Callback);
+      addEventListener("timerFinished", transitionPhase2Callback);
+    };
+    let transitionPhase2Callback = () => {
+      this.inLevelTransition = false;
+      this.inTransitionPhase2 = false;
+
+      // Set up bowling ball and timer for next level
+      ball.setXVelFromLevel(this.currLevel);
+      timer.startCountdown(this.calculateTimeForLevel(), true);
+
+      removeEventListener("timerFinished", transitionPhase2Callback);
+      addEventListener("timerFinished", this.levelEndCallback);
+    };
+
+    addEventListener("timerFinished", transitionPhase1Callback);
+    timer.startCountdown(1.5);
   }
 
   resetProperties() {
-    this.currLevel = 1;
+    this.currLevel = 0;
     this.numPinsKnockedDown = 0;
-    this.numPinsNeededForLevel = this.calculatePinsNeededForLevel();
+    this.numPinsNeededForLevel = 0;
+    this.inLevelTransition = false;
+  }
+
+  update() {
+    // Text for number of pins knocked down
+    if (!this.inLevelTransition) {
+      let textColor = this.numPinsKnockedDown < this.numPinsNeededForLevel ? "yellow" : "green";
+      text("P " + this.numPinsKnockedDown, G.WIDTH / 2 + 3, G.HEIGHT - 3, {color: textColor});
+    }
+    // Level transition text
+    else if (this.inTransitionPhase1) {
+      text(this.phase1Text, this.getCenteredTextLineCoords(this.phase1Text));
+    }
+    else if (this.inTransitionPhase2) {
+      let currentTextYCoord = G.HEIGHT / 3;
+      for (let textLine of this.phase2TextArray) {
+        text(textLine, this.getCenteredTextLineXCoord(textLine), currentTextYCoord);
+        currentTextYCoord += 8;
+      }
+    }
   }
 }
 
@@ -274,12 +381,18 @@ function update() {
     pinRowTop.resetProperties();
     pinRowBottom.resetProperties();
     timer.resetProperties();
+    levelMgr.resetProperties();
+
+    levelMgr.playLevelTransitionSequence();
   }
 
-  ball.update();
-  pinRowBottom.update();
-  pinRowTop.update();
+  if (!levelMgr.inLevelTransition) {
+    ball.update();
+    pinRowBottom.update();
+    pinRowTop.update();
+  }
   timer.update();
+  levelMgr.update();
 }
 
 addEventListener("load", onLoad);
