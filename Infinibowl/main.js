@@ -109,13 +109,13 @@ class BowlingBall {
     // Update x position
     this.x += clamp(this.xVel, -this.MAX_X_SPD, this.MAX_X_SPD);
     // Prevent the ball from going off left and right sides of screen
-    if (ball.x >= this.RIGHT_SCREEN_BOUND) {
+    if (this.x >= this.RIGHT_SCREEN_BOUND) {
       this.xVel *= -1;
-      ball.x -= 2 * (ball.x - this.RIGHT_SCREEN_BOUND);
+      this.x -= 2 * (this.x - this.RIGHT_SCREEN_BOUND);
     }
-    else if (ball.x <= this.LEFT_SCREEN_BOUND) {
+    else if (this.x <= this.LEFT_SCREEN_BOUND) {
       this.xVel *= -1;
-      ball.x += 2 * (this.LEFT_SCREEN_BOUND - ball.x);
+      this.x += 2 * (this.LEFT_SCREEN_BOUND - this.x);
     }
 
     // Update y position
