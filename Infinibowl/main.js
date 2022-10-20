@@ -53,7 +53,7 @@ class BowlingBall {
 
     this.Y_SPAWN_COORD = G.HEIGHT - 12; // Give some room for UI on bottom of screen
 
-    this.MAX_X_SPD = this.RIGHT_SCREEN_BOUND - this.LEFT_SCREEN_BOUND;
+    this.MAX_X_SPD = (this.RIGHT_SCREEN_BOUND - this.LEFT_SCREEN_BOUND) / 2;
 
     this.BASE_THROW_SPEED = 1;
 
@@ -284,7 +284,7 @@ class LevelManager {
   }
 
   calculateTimeForLevel() {
-    return 11 + 1.5 * sqrt(this.currLevel - 1);
+    return 5 + 1.5 * sqrt(this.currLevel + 83); // At level 22: 20 pins or more in 20 secs.
   }
 
   // Return a vector for the position the given single line of text would need to be drawn to be centered
