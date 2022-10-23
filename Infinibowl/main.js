@@ -169,7 +169,7 @@ class PinRow {
 
   update() {
     if (this.pinArray.length == 0
-      || (rndi(30) == 0 && abs((this.pinArray.at(-1).x) - this.X_SPAWN_COORD) > 4)) { // Add some spawning randomness
+      || (rndi(30) == 0 && abs((this.pinArray[this.pinArray.length-1].x) - this.X_SPAWN_COORD) > 4)) { // Add some spawning randomness
       this.createNewPin();
     }
 
