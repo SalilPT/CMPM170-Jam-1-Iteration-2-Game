@@ -92,7 +92,6 @@ class BowlingBall {
   }
 
   setXVelFromLevel(level) {
-    // TODO?: Change this
     this.xVel = this.BASE_X_VEL * sqrt(level);
   }
 
@@ -126,6 +125,8 @@ class BowlingBall {
       this.yVel = 0;
       this.xVel = this.xVelBeforeRolling;
       this.isRolling = false;
+      // Spawn ball at a random x position
+      this.x = rndi(this.LEFT_SCREEN_BOUND, this.RIGHT_SCREEN_BOUND + 1);
     }
 
     // Drawing
