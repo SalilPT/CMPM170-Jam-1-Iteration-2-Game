@@ -187,7 +187,7 @@ class PinRow {
         score += 1;
         dispatchEvent(G.PIN_KNOCKED_DOWN_EVENT);
         play("hit");
-        particle(pin.x, pin.y, 10, 0.75, -PI/2, PI/8);
+        particle(pin.x, pin.y, 10, 0.75, -PI / 2, PI / 8);
         pinsToRemove.push(pin);
       }
     }
@@ -288,14 +288,14 @@ class LevelManager {
   }
 
   // Return a vector for the position the given single line of text would need to be drawn to be centered
-  getCenteredTextLineCoords(text) {
-    let textX = 3 + (G.WIDTH - text.length * 6)/2;
-    let textY = G.HEIGHT / 2 - 3;
+  getCenteredTextLineCoords(text, yOffset = 0) {
+    let textX = 3 + (G.WIDTH - text.length * 6) / 2;
+    let textY = G.HEIGHT / 2 + yOffset;
     return vec(textX, textY);
   }
 
   getCenteredTextLineXCoord(text) {
-    return 3 + (G.WIDTH - text.length * 6)/2;
+    return 3 + (G.WIDTH - text.length * 6) / 2;
   }
 
   playLevelTransitionSequence() {
@@ -357,7 +357,7 @@ class LevelManager {
     }
     // Level transition text
     else if (this.inTransitionPhase1) {
-      text(this.phase1Text, this.getCenteredTextLineCoords(this.phase1Text));
+      text(this.phase1Text, this.getCenteredTextLineCoords(this.phase1Text, -2));
     }
     else if (this.inTransitionPhase2) {
       let currentTextYCoord = G.HEIGHT / 3;
