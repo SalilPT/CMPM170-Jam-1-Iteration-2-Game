@@ -285,7 +285,7 @@ class LevelManager {
   }
 
   calculateTimeForLevel() {
-    return 5 + 1.5 * sqrt(this.currLevel + 83); // At level 22: 20 pins or more in 20 secs.
+    return 5 + 1.5 * sqrt(this.currLevel + 41); // At level 10: 16 pins or more in 15 secs.
   }
 
   // Return a vector for the position the given single line of text would need to be drawn to be centered
